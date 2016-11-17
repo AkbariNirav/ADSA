@@ -1,0 +1,208 @@
+#include<iostream>
+#include<stdio.h>
+using namespace std;
+struct node_info
+{
+    int no;
+    int lv_time, st_time;
+}*q = NULL;
+struct node
+{
+    node_info *pt;
+    node *next;
+}*top = NULL, *p = NULL, *np = NULL;
+struct node1
+{
+    node1 *link;
+    node_info *pt1;
+}*head = NULL, *m = NULL, *n = NULL, *np1 = NULL;
+int c = 0;
+void push(node_info *ptr)
+{
+    np = new node;
+    np->pt = ptr;
+    np->next = NULL;
+    if (top == NULL)
+    {
+        top = np;
+    }
+    else
+    {
+        np->next = top;
+        top = np;
+    }
+}
+node_info *pop()
+{
+    if (top == NULL)
+    {
+        cout<<"underflow\n";
+    }
+    else
+    {
+        p = top;
+        top = top->next;
+        return(p->pt);
+        delete(p);
+    }
+}
+void store(node_info *ptr1)
+{
+    np1 = new node1;
+    np1->pt1 = ptr1;
+    np1->link = NULL;
+    if (c == 0)
+    {
+        head = np1;
+        m = head;
+        m->link = NULL;
+        c++;
+    }
+    else
+    {
+        m = head;
+        np1->link = m;
+        head = np1;
+    }
+}
+void remove(int x)
+{
+    m = head;
+    if ((m->pt1)->no == x)
+    {
+        head = head->link;
+        delete(m);
+    }
+    else
+    {
+        while ((m->pt1)->no != x && m->link != NULL)
+        {
+            n = m;
+            m = m->link;
+        }
+        if ((m->pt1)->no == x)
+        {
+            n->link = m->link;
+            delete(m);
+        }
+        else if (m->link == NULL)
+        {
+            cout<<"error\n";
+        }
+    }
+}            
+void topo(int *v, int am[][2], int i)
+{
+    q = new node_info;
+    q->no = i;
+    q->st_time = c;
+     push(q);
+    v[i] = 1;
+    for (int j = 0; j < 2; j++)
+    {
+        if (am[i][j] == 0  || (am[i][j] == 1 && v[j] == 1))
+            continue;
+        else if (am[i][j] == 1 && v[j] == 0)
+        {
+            c++;
+            topo(v,am,j);
+        }
+    }
+    c++;
+    q = pop();
+    q->lv_time = c;
+    store(q);
+    return;
+}
+void topo1(int *v, int am[][2], int i)
+{
+    v[i] = 1;
+    remove(i);
+    cout<<i<<endl;
+    for (int j = 0; j < 2; j++)
+    {
+        if (am[i][j] == 0  || (am[i][j] == 1 && v[j] == 1))
+        {
+            continue;
+        }
+        else if (am[i][j] == 1 && v[j] == 0)
+        {
+            topo1(v,am,j);
+        }
+    }
+    return;
+}
+int main()
+{
+	int num;
+	printf("Enter the number of vertex in Graph : ");
+	scanf("%d",&num);
+	int v[num], am[num][num], amt[num][num];
+	int i, j;
+	        
+	for ( i = 0 ; i < num ; i++ )
+	{
+		v[i] = 0; 
+		for ( j = 0 ; j < num ; j++ )
+		{
+			am[i][j]=0;
+		}
+	}
+	char reply;
+	for ( i = 1 ; i <= num ; i++ )
+	{
+		for ( j = 1 ; j <= num ; j++ )
+		{
+			if ( i == j )
+			{
+				am[i][j] = 0;
+				continue;
+			} 
+			else
+			{
+				std::cout << "\nVertices "<<i <<" & "<< j <<" are Adjacent (Y/N) :";
+				std::cin >> reply;
+				if ( reply == 'y' || reply == 'Y' )
+				{
+					int weight;
+					printf("\nEnter the weight of the edge :");
+					scanf("%d",&weight);
+					am[i-1][j-1] = weight;
+				}
+			}
+		} 
+	}		
+	printf("\n\n");
+	int count = 0;
+	for ( i = -1 ; i < num ; i++ )
+	{
+		if(i==-1)
+			std::cout <<"\t";
+		for ( j = 0 ; j < num ; j++ )
+		{
+			if(count==0 && i!=-1)
+			{
+				std::cout << "\n" << "V" <<i+1<<"\t";
+				count++;
+			}
+			if(i==-1)
+				std::cout <<"V"<<j+1<<"\t";
+			else
+				std::cout <<am[i][j] << "\t";
+		}
+		printf("\n\n");
+		count=0;
+	}
+    topo(v, am, 0);
+    for (int i = 0; i < num; i++)
+    {
+        v[i] = 0;
+        for (int j = 0; j < num; j++)
+            amt[j][i] = am[i][j];
+    }
+    while (head != NULL)
+    {
+        cout<<"Sortest Path Are :\n";                 
+            topo1(v, amt, (head->pt1)->no);
+    }
+}
